@@ -1,0 +1,263 @@
+name: Build & Push
+
+# -----------------------------------------------------------------------------
+# Builds the Stellarium-on-Selkies image and pushes it to:
+#   * GitHub Container Registry  (ghcr.io/junkerderprovinz/stellarium)
+#   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/stellarium)
+#     — active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
+#       secret are set together; until then the build stays GHCR-only.
+#
+# Architecture: one NATIVE build job per platform (amd64 on ubuntu-latest,
+# arm64 on ubuntu-24.04-arm — free for public repos). stellarium is in Debian
+# trixie main for both arches. Each job boots its image as a smoke gate (the
+# stellarium binary is present AND the Selkies WebUI serves), pushes by digest,
+# and a merge job assembles the multi-arch manifest for both registries.
+#
+# Triggers:
+#   * Push to main   → tags: latest, sha-<short>
+#   * Tag v*.*.*     → tags: latest, <version>, <major>, <major.minor>
+#   * Weekly cron    – picks up upstream Selkies base + trixie stellarium updates
+#   * Manual workflow_dispatch
+# -----------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*.*.*' ]
+  schedule:
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: stellarium
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (labels)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+
+      - name: Build ${{ matrix.arch }} image for smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: false
+          load: true
+          tags: stellarium:smoke-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+
+      # Smoke-test gate: the stellarium binary must be present, and the Selkies
+      # WebUI must respond, before anything is pushed. Runs NATIVELY on both
+      # arches. `stellarium --version` is best-effort (informational; it needs no
+      # display) — the hard gates are the binary presence and the WebUI boot.
+      # The software-GL (llvmpipe) render path is verified in the live box-check,
+      # not here — CI has no display to draw the sky against.
+      - name: Smoke test — ${{ matrix.arch }} must ship stellarium and serve the WebUI
+        run: |
+          set -euo pipefail
+          img=stellarium:smoke-${{ matrix.arch }}
+          echo "== stellarium binary present =="
+          docker run --rm --entrypoint sh "$img" -c 'command -v stellarium >/dev/null && test -x /usr/bin/stellarium' \
+            || { echo "❌ /usr/bin/stellarium missing — the package did not install"; exit 1; }
+          echo "== stellarium --version (informational) =="
+          docker run --rm --entrypoint sh "$img" -c 'timeout 30 stellarium --version 2>&1 | head -3' || echo "(--version did not print headlessly; not fatal)"
+          echo "== boot gate =="
+          name=stel-smoke
+          docker run -d --name "$name" -p 3000:3000 -p 3001:3001 "$img"
+          up() {
+            local c
+            c=$(curl -k -o /dev/null -s -w '%{http_code}' --max-time 5 https://localhost:3001/ || true)
+            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
+            c=$(curl -o /dev/null -s -w '%{http_code}' --max-time 5 http://localhost:3000/ || true)
+            { [ -n "$c" ] && [ "$c" != "000" ]; } && return 0
+            return 1
+          }
+          deadline=$((SECONDS + 150))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            if up; then
+              echo "✅ WebUI responded after ${SECONDS}s"
+              docker rm -f "$name" >/dev/null
+              exit 0
+            fi
+            if [ -z "$(docker ps -q --filter "name=$name")" ]; then
+              echo "❌ container exited early — logs:"; docker logs "$name" || true
+              docker rm -f "$name" >/dev/null; exit 1
+            fi
+            sleep 1
+          done
+          echo "❌ WebUI did not respond within 150s — logs:"
+          docker logs "$name" || true
+          docker rm -f "$name" >/dev/null
+          exit 1
+
+      - name: Scan image for CVEs (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: stellarium:smoke-${{ matrix.arch }}
+          format: sarif
+          output: trivy-results-${{ matrix.arch }}.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Upload Trivy results to the Security tab
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results-${{ matrix.arch }}.sarif
+          category: trivy-${{ matrix.arch }}
+
+      - name: Push ${{ matrix.arch }} by digest
+        id: push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.push.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v7
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+            name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=schedule,pattern=weekly
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=short
+
+      - name: Create multi-arch manifests
+        working-directory: /tmp/digests
+        run: |
+          set -euo pipefail
+          src="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}"
+          sources=""
+          for d in *; do sources="$sources ${src}@sha256:${d}"; done
+          echo "sources:${sources}"
+          tagargs=""
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && tagargs="$tagargs -t $tag"
+          done <<< "$DOCKER_METADATA_OUTPUT_TAGS"
+          echo "tags:${tagargs}"
+          docker buildx imagetools create ${tagargs} ${sources}
+
+      - name: Inspect
+        run: |
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Checkout (README for Docker Hub sync)
+        if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+        uses: actions/checkout@v7
+
+      - name: Docker Hub description sync ready?
+        id: dhdesc
+        if: ${{ vars.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+        env:
+          PW: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          if [ -n "$PW" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "DOCKERHUB_PASSWORD not set — skipping Docker Hub description sync"; echo "go=false" >> "$GITHUB_OUTPUT"; fi
+
+      # Cosmetic: syncs the GitHub README to the Docker Hub repo description.
+      # continue-on-error so a bad/expired DOCKERHUB_PASSWORD (401 at login — the
+      # description API needs the account password or an edit-scoped PAT, not the
+      # push token) never reds a build whose images already pushed fine.
+      - name: Sync README to Docker Hub
+        if: ${{ steps.dhdesc.outputs.go == 'true' }}
+        continue-on-error: true
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          short-description: "Stellarium for Unraid, in your browser via Selkies — the open-source planetarium, no VNC client."
+          enable-url-completion: true

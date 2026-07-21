@@ -1,0 +1,76 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  hadolint:
+    name: Hadolint (Dockerfile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hadolint/hadolint-action@v3.3.0
+        with:
+          dockerfile: Dockerfile
+          # DL3008 = pin apt versions – we deliberately skip pinning since the
+          #          base image / Debian trixie move on their own cadence.
+          # DL3009 = clean apt lists after install – we clean once in the final
+          #          RUN, kept readable.
+          # SC2086 = unquoted expansion – deliberate word splitting.
+          ignore: DL3008,DL3009,SC2086
+          failure-threshold: warning
+
+  shellcheck:
+    name: ShellCheck (shell scripts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          # All shell scripts shipped in the image: *.sh, the extensionless
+          # s6-rc.d service scripts (run) and the openbox autostart. Shebangs are
+          # honored; the with-contenv scripts carry a "shellcheck shell=bash"
+          # directive.
+          SCRIPTS=$(find rootfs -type f \( -name '*.sh' -o -name 'run' -o -name 'autostart' \))
+
+          if [ -z "${SCRIPTS}" ]; then
+            echo "ERROR: no shell scripts found — the find pattern is broken." >&2
+            exit 1
+          fi
+
+          echo "Checking the following scripts:"
+          echo "${SCRIPTS}"
+          echo "---"
+
+          # -S warning: fail on warnings and up
+          # -x:         follow sourced files
+          # -e SC1091:  allow sourcing files not present at lint time
+          # shellcheck disable=SC2086
+          shellcheck -S warning -x -e SC1091 ${SCRIPTS}
+
+          echo "All scripts passed shellcheck."
+
+  xml-validate:
+    name: XML Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate XML files
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
+          shopt -s nullglob
+          found=0
+          for f in $(find . -name '*.xml' -not -path './.git/*'); do
+            echo "Checking $f"
+            xmllint --noout "$f"
+            found=1
+          done
+          [ "$found" -eq 0 ] && echo "No XML files in this repo (template lives in unraid-apps) — nothing to validate."
+          exit 0

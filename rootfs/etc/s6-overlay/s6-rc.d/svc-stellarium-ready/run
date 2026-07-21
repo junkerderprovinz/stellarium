@@ -1,0 +1,48 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# -----------------------------------------------------------------------------
+# svc-stellarium-ready — print a loud "READY" banner to the container log once
+# the WebUI is actually serving, so the user knows the (multi-second) first
+# start has finished. House standard: every own-image container prints an
+# "<APP> IS READY" log banner alongside the ASCII init banner.
+# -----------------------------------------------------------------------------
+FLAG="/run/stellarium-ready.printed"
+
+# /run is tmpfs (wiped on every container start) -> banner prints once per start.
+if [[ -f "${FLAG}" ]]; then
+    exec sleep infinity
+fi
+
+# Wait until the Selkies WebUI (nginx) accepts connections on its internal HTTP
+# port (3000 is always served regardless of the user's HTTPS preference).
+# Capped at ~5 min so we never hang forever.
+ready=0
+for _ in $(seq 1 150); do
+    if (exec 3<>/dev/tcp/127.0.0.1/3000) 2>/dev/null; then
+        exec 3>&- 3<&-
+        ready=1
+        break
+    fi
+    sleep 2
+done
+
+# Small settle so Stellarium's window is actually drawn before we announce.
+[[ "${ready}" -eq 1 ]] && sleep 4
+
+# House ASCII brand banner, printed here so it sits directly above the status
+# box (brand + "<APP> IS READY" as the log's final block).
+/usr/local/bin/print-banner.sh "Stellarium for Unraid" "Selkies web desktop" 2>/dev/null || true
+
+if [[ "${ready}" -eq 1 ]]; then
+    echo "  ✓ STELLARIUM IS READY"
+    echo "    Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
+    echo ""
+else
+    echo "  ✗ STELLARIUM DID NOT BECOME READY"
+    echo "    The WebUI never answered within 5 minutes — check the log above"
+    echo ""
+fi
+
+touch "${FLAG}"
+# Longrun: stay up so s6 does not restart us and re-print the banner.
+exec sleep infinity

@@ -1,0 +1,36 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# -----------------------------------------------------------------------------
+# init-stellarium — seed the openbox session + env for Stellarium.
+# Runs as an s6 oneshot AFTER init-selkies-config (which copies /defaults/
+# autostart into /config on first run only). We re-seed our autostart on EVERY
+# start so our launch command stays authoritative across image updates, and we
+# push the XDG paths into the s6 container environment so every process inherits
+# them.
+# -----------------------------------------------------------------------------
+set -e
+
+log() { echo "[init-stellarium] $*"; }
+
+mkdir -p /run/s6/container_environment
+set_env() { printf "%s" "$2" > "/run/s6/container_environment/$1"; }
+
+set_env XDG_CONFIG_HOME  "/config/.config"
+set_env XDG_DATA_HOME    "/config/.local/share"
+set_env XDG_CACHE_HOME   "/config/.cache"
+
+# Re-seed the openbox autostart every start (init-selkies-config only copies it
+# on first run) so our launch command wins after an image update.
+mkdir -p /config/.config/openbox
+cp -af /defaults/autostart /config/.config/openbox/autostart
+chmod 0755 /config/.config/openbox/autostart
+
+# Stellarium's dedicated user directory (config, landscapes, downloaded star
+# catalogues, screenshots) — created here so the autostart can pass it via
+# --user-dir and everything the user changes persists under /config.
+mkdir -p /config/.stellarium
+mkdir -p /config/.config /config/.local/share /config/.cache
+chown -R abc:abc /config/.stellarium /config/.config /config/.local /config/.cache 2>/dev/null || true
+
+log "init-stellarium done"
+exit 0

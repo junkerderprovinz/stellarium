@@ -1,0 +1,32 @@
+#!/bin/sh
+# -----------------------------------------------------------------------------
+# Stellarium autostart for linuxserver/baseimage-selkies
+# -----------------------------------------------------------------------------
+# NOTE POSIX: openbox runs this with /bin/sh (dash) and ignores the shebang, so
+# no bashisms here ([[ ]], arrays, ...) — dash silently skips them.
+#
+# Single-app session: Stellarium is launched as the session's main window. The
+# base's openbox maximises the top-level window, so the planetarium fills the
+# desktop. When the window is closed the session ends and the base restarts it,
+# so closing simply reopens a fresh Stellarium — the kiosk model used by the
+# other Selkies app containers.
+# -----------------------------------------------------------------------------
+
+# Pin the XDG dirs to the persistent /config tree for EVERY PUID (under PUID=0
+# the session runs as literal root, whose default HOME differs from abc's).
+export XDG_CONFIG_HOME="/config/.config"
+export XDG_DATA_HOME="/config/.local/share"
+export XDG_CACHE_HOME="/config/.cache"
+
+# Stellarium keeps its config, landscapes, downloaded star catalogues and
+# screenshots in a dedicated user directory. Pin it explicitly under /config so
+# everything the user changes (location, plugins, DSO catalogues) persists
+# across image updates regardless of how the base resolves HOME. init-stellarium
+# has already created and chowned it.
+STEL_USER_DIR="/config/.stellarium"
+
+echo "[stellarium-autostart] launching Stellarium (user-dir=$STEL_USER_DIR)" >&2
+
+# dbus-launch gives Stellarium a session bus (quiets the dbus warnings and lets
+# Qt portals work). --exit-with-session ties the bus to the app lifetime.
+exec dbus-launch --exit-with-session /usr/bin/stellarium --user-dir "$STEL_USER_DIR"

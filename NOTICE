@@ -1,0 +1,35 @@
+NOTICE — Bundled Software in the Stellarium Unraid Container Image
+=================================================================
+
+The MIT License (see LICENSE) covers ONLY the wrapper assets in this
+repository:
+  * Dockerfile and rootfs/ overlay
+  * Helper scripts under rootfs/usr/local/bin/
+  * Unraid container template (maintained in the junkerderprovinz/unraid-apps repo)
+  * README, banner and icon artwork
+
+It does NOT relicense any software shipped inside the resulting container
+image. Each bundled component retains its upstream license:
+
+  * Stellarium                   GPL-2.0-or-later
+                                 https://github.com/Stellarium/stellarium
+                                 (installed from the Debian `stellarium` package)
+  * LinuxServer.io baseimage-selkies
+                                 GPL-3.0
+                                 https://github.com/linuxserver/docker-baseimage-selkies
+  * Qt                           LGPL-3.0 / GPL-3.0
+  * Mesa, GLU                    MIT / SGI-B-2.0
+  * Fonts (Noto, DejaVu)         various open licenses (OFL, Bitstream Vera)
+
+Stellarium's bundled sky data, textures, star catalogues, landscapes and
+sky-culture artwork carry their own licenses (a mix of GPL, Creative Commons
+and public-domain terms); see Stellarium's own about/licensing screens and its
+source distribution for the per-asset details.
+
+This project is not affiliated with or endorsed by the Stellarium project.
+"Stellarium" is a name of software published by the Stellarium developers; it
+is used here only to name the application this image packages.
+
+When you run, redistribute or rebuild the resulting container image, you must
+comply with the licenses of all bundled components in addition to the MIT
+license that covers this repository.
