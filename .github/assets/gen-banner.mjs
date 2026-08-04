@@ -33,7 +33,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const NAME = "Stellarium";
 const CLAIM = "Clear skies, guaranteed.";
 const W = 1600, H = 500;
-const LH = 300;                     // tile height (house standard) - square
+const LH = 400;                     // tile height (house standard) - square
 const startX = 165;                 // left-anchor (house standard)
 const gap = 70;                     // tile-to-wordmark gap
 let nameSize = 132;                 // auto-fit down if the wordmark is too wide
