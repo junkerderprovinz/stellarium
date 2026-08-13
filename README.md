@@ -25,6 +25,10 @@ planetarium where the old noVNC containers feel laggy.
 </p>
 
 <p align="center">
+A solo, free-time project. Bugs and ideas via <a href="https://github.com/junkerderprovinz/stellarium/issues">GitHub issues</a>; if it's useful to you, a coffee is always welcome.
+</p>
+
+<p align="center">
   <a href="https://buymeacoffee.com/junkerderprovinz">
     <img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
   </a>
@@ -42,6 +46,7 @@ planetarium where the old noVNC containers feel laggy.
 6. [How it works](#6-how-it-works)
 7. [Credits](#7-credits)
 8. [License](#8-license)
+9. [Support this project](#9-support-this-project)
 
 <br>
 
@@ -166,8 +171,13 @@ This repository packages Stellarium as a container for Unraid. The packaging in 
 
 <br>
 
+## 9. Support this project
+
+Stellarium is a one-person project. I write, test, and support it myself, in whatever free time is left after work. Found a bug or have an idea? Please [open a GitHub issue](https://github.com/junkerderprovinz/stellarium/issues) so it doesn't get lost.
+
+If you'd like to support the time that goes into it, you're welcome to buy me a coffee. Genuinely appreciated either way.
+
 <p align="center">
-  If this saved you a planetarium setup, consider buying me a coffee:<br><br>
   <a href="https://buymeacoffee.com/junkerderprovinz">
     <img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/button-buy-me-a-coffee.svg" alt="Buy me a coffee" width="220">
   </a>
