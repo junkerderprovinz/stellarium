@@ -33,15 +33,23 @@ done
 # box (brand + "<APP> IS READY" as the log's final block).
 /usr/local/bin/print-banner.sh "Stellarium for Unraid" "Selkies web desktop" 2>/dev/null || true
 
+# Colored via plain ANSI SGR codes, not tput (tput needs a terminfo database
+# that may not exist in a minimal container): 32 green / 31 red, reset with 0.
+# docker logs passes stdout bytes through untouched, so any ANSI-aware viewer
+# (a real terminal, Unraid's log panel) renders the color; a viewer that does
+# not understand SGR codes just shows them as inert text.
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Clean one-line status (house look: no rule/box walls, label + detail on the
+# same line). print-banner.sh already left one blank line above this.
 if [[ "${ready}" -eq 1 ]]; then
-    echo "  ✓ STELLARIUM IS READY"
-    echo "    Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
-    echo ""
+    echo -e "  ${GREEN}✓ STELLARIUM IS READY${NC} - Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
 else
-    echo "  ✗ STELLARIUM DID NOT BECOME READY"
-    echo "    The WebUI never answered within 5 minutes — check the log above"
-    echo ""
+    echo -e "  ${RED}✗ STELLARIUM DID NOT BECOME READY${NC} - The WebUI never answered within 5 minutes, check the log above"
 fi
+echo ""
 
 touch "${FLAG}"
 # Longrun: stay up so s6 does not restart us and re-print the banner.
