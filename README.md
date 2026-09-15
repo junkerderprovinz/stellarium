@@ -108,10 +108,28 @@ Then open the WebUI on the mapped **HTTPS** port (default `3001`).
 | `CUSTOM_HTTPS_PORT` | No | HTTPS port the WebUI is served on (default `3001`). |
 | `PUID` / `PGID` | No | User/group the app runs as, so files it writes match your share ownership. The Unraid template sets `99`/`100` (nobody/users). |
 | `TZ` | No | Timezone (e.g. `Europe/Berlin`). Also sets Stellarium's clock when it follows system time. |
+| `MAX_RES` | No | Virtual screen the container serves, picked from a dropdown of presets. This is where the container's memory goes, see below. |
+| `MAX_RES_CUSTOM` | No | Your own `WIDTHxHEIGHT` instead of a preset, e.g. `3440x1440`. Wins over `MAX_RES` when set. |
 
 Stellarium's configuration, chosen location, downloaded star catalogues, landscapes, plugins and
 screenshots all persist under **`/config`** (in `/config/.stellarium`), so nothing is lost across
 image updates.
+
+### Screen size and memory use
+
+The X server reserves its whole virtual framebuffer up front, at roughly **4 bytes per pixel**, no
+matter how big your browser window actually is. At the full `15360x8640` that is 530 MB before
+anything else runs, which is most of what this container uses.
+
+The image ships that full size, so every resolution stays available. If you would rather have the
+RAM back, pick a smaller screen in the template: the dropdown lists sizes from 1080p upwards with
+the cost of each, and the free field next to it takes anything not in the list. A value that is not
+a `WIDTHxHEIGHT` pair is ignored with a note in the container log rather than stopping the
+container. Above the size you picked, the picture is scaled to your window rather than cut off.
+
+> [!NOTE]
+> Closing Stellarium in the browser starts a fresh one instead of leaving a black screen. That is
+> the base image's watchdog, enabled here by default.
 
 > [!NOTE]
 > The WebUI has **no login by default** for trusted-LAN use. Never expose it directly to the

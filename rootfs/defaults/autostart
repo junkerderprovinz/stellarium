@@ -7,9 +7,22 @@
 #
 # Single-app session: Stellarium is launched as the session's main window. The
 # base's openbox maximises the top-level window, so the planetarium fills the
-# desktop. When the window is closed the session ends and the base restarts it,
-# so closing simply reopens a fresh Stellarium — the kiosk model used by the
-# other Selkies app containers.
+# desktop.
+#
+# DO NOT PUT `exec` IN FRONT OF THE LAUNCH BELOW. Closing the window used to
+# leave an empty black desktop, because openbox keeps running when this script
+# ends. The base image solves that with its svc-watchdog service, enabled by
+# RESTART_APP (set in the Dockerfile), which watches for
+#
+#     pgrep -o -u abc -f "sh $HOME/.config/openbox/autostart"
+#
+# and runs that script again when it disappears. `exec` replaces this script's
+# process image, so the command line stops matching that pattern, the watchdog
+# never finds the process, waits for it forever and silently restarts nothing.
+# Measured on the built image: with `exec` the watchdog logs nothing at all and
+# a closed Stellarium stays closed; without it the watchdog reports the restart
+# and Stellarium is back within two seconds. None of LinuxServer's own Selkies
+# images use `exec` here either.
 # -----------------------------------------------------------------------------
 
 # Pin the XDG dirs to the persistent /config tree for EVERY PUID (under PUID=0
@@ -29,4 +42,4 @@ echo "[stellarium-autostart] launching Stellarium (user-dir=$STEL_USER_DIR)" >&2
 
 # dbus-launch gives Stellarium a session bus (quiets the dbus warnings and lets
 # Qt portals work). --exit-with-session ties the bus to the app lifetime.
-exec dbus-launch --exit-with-session /usr/bin/stellarium --user-dir "$STEL_USER_DIR"
+dbus-launch --exit-with-session /usr/bin/stellarium --user-dir "$STEL_USER_DIR"
