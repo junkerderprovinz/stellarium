@@ -126,7 +126,12 @@ The image ships that full size, so every resolution stays available. If you woul
 RAM back, pick a smaller screen in the template: the dropdown lists sizes from 1080p upwards with
 the cost of each, and the free field next to it takes anything not in the list. A value that is not
 a `WIDTHxHEIGHT` pair is ignored with a note in the container log rather than stopping the
-container. Above the size you picked, the picture is scaled to your window rather than cut off.
+container.
+
+Pick a size at least as big as the largest browser window you open the WebUI in, counted in physical
+pixels: a 1600x1000 window on a laptop set to 200 % needs 3200x2000. A bigger window does not get a
+bigger desktop: the desktop keeps its last size in the top-left corner and the rest of the window
+stays black.
 
 > [!NOTE]
 > Closing Stellarium in the browser starts a fresh one instead of leaving a black screen. That is
