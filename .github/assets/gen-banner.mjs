@@ -4,16 +4,16 @@
  *   stellarium-banner-dark.svg / .png : GitHub-dark #0d1117, light name, lighter grey claim
  * The README serves the pair via <picture> (prefers-color-scheme).
  *
- * House banner standard: the app tile (icon.png - a self-contained rounded
+ * House banner standard: the app tile (icon.png, a self-contained rounded
  * night-sky icon that reads on both a light and a dark ground, so it is embedded
- * UNCHANGED in both themes) is left-anchored at x=165, 300px tall; the
+ * unchanged in both themes) is left-anchored at x=165, 400px tall; the
  * "Stellarium" wordmark sits to its right in Open Sans (OFL), foreground colour;
  * the cheeky claim in Lato (OFL) grey, left-aligned with the wordmark and pulled
- * close. Name + claim are rendered to VECTOR PATHS (opentype.js) so the SVG needs
+ * close. Name + claim are rendered to vector paths (opentype.js) so the SVG needs
  * no font; the raster tile is inlined as a data URI so the SVG is self-contained.
  *
  * Deps: `npm i -g @resvg/resvg-js opentype.js`. Fonts (OFL) are fetched at
- * runtime to the OS temp dir - NEVER committed. Run:
+ * runtime to the OS temp dir and never committed. Run:
  *   node .github/assets/gen-banner.mjs
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -29,11 +29,10 @@ const opentype = require(`${gRoot}/opentype.js`);
 const { Resvg } = require(`${gRoot}/@resvg/resvg-js`);
 const __dir = dirname(fileURLToPath(import.meta.url));
 
-// ---- content + styling -----------------------------------------------------
 const NAME = "Stellarium";
 const CLAIM = "Clear skies, guaranteed.";
 const W = 1600, H = 500;
-const LH = 400;                     // tile height (house standard) - square
+const LH = 400;                     // tile height (house standard), square
 const startX = 165;                 // left-anchor (house standard)
 const gap = 70;                     // tile-to-wordmark gap
 let nameSize = 132;                 // auto-fit down if the wordmark is too wide
@@ -42,11 +41,10 @@ const THEMES = [
   { suffix: "",      bg: "#ffffff", name: "#1f2328", claim: "#5a5d5e" },
   { suffix: "-dark", bg: "#0d1117", name: "#e6edf3", claim: "#9aa4ad" },
 ];
-// ---------------------------------------------------------------------------
 
-// Fonts (OFL): Open Sans for the wordmark, Lato for the claim - fetched, never committed.
+// Fonts (OFL): Open Sans for the wordmark, Lato for the claim, fetched and never committed.
 // Verify Content-Length so a truncated download can't silently break glyph outlines
-// (a short file still parses, but the tail glyphs render broken - e.g. "guaranteed").
+// (a short file still parses, but the tail glyphs render broken).
 async function font(url, file) {
   const p = join(tmpdir(), file);
   if (!existsSync(p) || readFileSync(p).length < 50000) {
@@ -86,11 +84,10 @@ const blockH = nameAsc + nameDesc + lineGap + claimAsc + claimDesc;
 const top = (H - blockH) / 2;
 const nameBaseline = top + nameAsc;
 const claimBaseline = nameBaseline + nameDesc + lineGap + claimAsc;
-// Render text as ONE <path> PER GLYPH, not a single merged path: resvg's tessellator
+// Render text as one <path> per glyph, not a single merged path: resvg's tessellator
 // can silently abort a merged multi-subpath path partway through for certain
-// glyph/coordinate combinations (it dropped "uaranteed." from the claim here),
-// and per-glyph paths sidestep that entirely. Colour is applied per theme, so
-// only the geometry (d) is precomputed.
+// glyph/coordinate combinations, and per-glyph paths sidestep that. Colour is
+// applied per theme, so only the geometry (d) is precomputed.
 const glyphD = (font, text, x, baseline, size) =>
   font.getPaths(text, x, baseline, size).map((p) => p.toPathData(2)).filter(Boolean);
 const nameD = glyphD(openSans, NAME, textX, nameBaseline, nameSize);

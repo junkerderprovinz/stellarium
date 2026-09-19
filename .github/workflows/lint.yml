@@ -16,11 +16,11 @@ jobs:
       - uses: hadolint/hadolint-action@2a66e89f53d0771bb131a7fa31f3136336094aa6 # v3.4.0
         with:
           dockerfile: Dockerfile
-          # DL3008 = pin apt versions – we deliberately skip pinning since the
-          #          base image / Debian trixie move on their own cadence.
-          # DL3009 = clean apt lists after install – we clean once in the final
+          # DL3008 = pin apt versions: not pinned, the base image and Debian
+          #          trixie move on their own cadence.
+          # DL3009 = clean apt lists after install: cleaned once in the final
           #          RUN, kept readable.
-          # SC2086 = unquoted expansion – deliberate word splitting.
+          # SC2086 = unquoted expansion: the word splitting is intended.
           ignore: DL3008,DL3009,SC2086
           failure-threshold: warning
 
@@ -53,7 +53,7 @@ jobs:
           SCRIPTS=$(find rootfs -type f \( -name '*.sh' -o -name 'run' -o -name 'autostart' \))
 
           if [ -z "${SCRIPTS}" ]; then
-            echo "ERROR: no shell scripts found — the find pattern is broken." >&2
+            echo "ERROR: no shell scripts found, the find pattern is broken." >&2
             exit 1
           fi
 
@@ -85,5 +85,5 @@ jobs:
             xmllint --noout "$f"
             found=1
           done
-          [ "$found" -eq 0 ] && echo "No XML files in this repo (template lives in unraid-apps) — nothing to validate."
+          [ "$found" -eq 0 ] && echo "No XML files in this repo (template lives in unraid-apps), nothing to validate."
           exit 0

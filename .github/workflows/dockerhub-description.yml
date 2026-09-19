@@ -31,5 +31,5 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ vars.DOCKERHUB_USERNAME }}/stellarium
-          short-description: "Stellarium for Unraid, in your browser via Selkies — the open-source planetarium, no VNC client."
+          short-description: "Stellarium for Unraid, in your browser via Selkies: the open-source planetarium, no VNC client."
           enable-url-completion: true

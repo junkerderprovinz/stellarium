@@ -1,25 +1,23 @@
 name: Build & Push
 
-# -----------------------------------------------------------------------------
 # Builds the Stellarium-on-Selkies image and pushes it to:
 #   * GitHub Container Registry  (ghcr.io/junkerderprovinz/stellarium)
-#   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/stellarium)
-#     — active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
-#       secret are set together; until then the build stays GHCR-only.
+#   * Docker Hub                 (docker.io/<DOCKERHUB_USERNAME>/stellarium),
+#     active only once the DOCKERHUB_USERNAME variable and DOCKERHUB_TOKEN
+#     secret are set together; until then the build stays GHCR-only.
 #
-# Architecture: one NATIVE build job per platform (amd64 on ubuntu-latest,
-# arm64 on ubuntu-24.04-arm — free for public repos). stellarium is in Debian
+# Architecture: one native build job per platform (amd64 on ubuntu-latest,
+# arm64 on ubuntu-24.04-arm, free for public repos). stellarium is in Debian
 # trixie main for both arches. Each job boots its image as a smoke gate (the
-# stellarium binary is present AND the Selkies WebUI serves), pushes by digest,
+# stellarium binary is present and the Selkies WebUI serves), pushes by digest,
 # and a merge job assembles the multi-arch manifest for both registries.
 #
 # Triggers:
 #   * Push to main   → tags: edge, main, sha-<short>
 #   * Tag v*.*.*     → tags: <version>, <major>, <major.minor>, and latest on
 #                      the newest version tag only
-#   * Weekly cron    – picks up upstream Selkies base + trixie stellarium updates
+#   * Weekly cron    → picks up upstream Selkies base + trixie stellarium updates
 #   * Manual workflow_dispatch
-# -----------------------------------------------------------------------------
 
 on:
   push:
@@ -82,18 +80,18 @@ jobs:
           cache-from: type=gha,scope=build-${{ matrix.arch }}
 
       # Smoke-test gate: the stellarium binary must be present, and the Selkies
-      # WebUI must respond, before anything is pushed. Runs NATIVELY on both
+      # WebUI must respond, before anything is pushed. Runs natively on both
       # arches. `stellarium --version` is best-effort (informational; it needs no
-      # display) — the hard gates are the binary presence and the WebUI boot.
+      # display); the hard gates are the binary presence and the WebUI boot.
       # The software-GL (llvmpipe) render path is verified in the live box-check,
-      # not here — CI has no display to draw the sky against.
-      - name: Smoke test — ${{ matrix.arch }} must ship stellarium and serve the WebUI
+      # not here, because CI has no display to draw the sky against.
+      - name: "Smoke test: ${{ matrix.arch }} must ship stellarium and serve the WebUI"
         run: |
           set -euo pipefail
           img=stellarium:smoke-${{ matrix.arch }}
           echo "== stellarium binary present =="
           docker run --rm --entrypoint sh "$img" -c 'command -v stellarium >/dev/null && test -x /usr/bin/stellarium' \
-            || { echo "❌ /usr/bin/stellarium missing — the package did not install"; exit 1; }
+            || { echo "❌ /usr/bin/stellarium missing, the package did not install"; exit 1; }
           echo "== stellarium --version (informational) =="
           docker run --rm --entrypoint sh "$img" -c 'timeout 30 stellarium --version 2>&1 | head -3' || echo "(--version did not print headlessly; not fatal)"
           echo "== boot gate =="
@@ -115,12 +113,12 @@ jobs:
               exit 0
             fi
             if [ -z "$(docker ps -q --filter "name=$name")" ]; then
-              echo "❌ container exited early — logs:"; docker logs "$name" || true
+              echo "❌ container exited early, logs:"; docker logs "$name" || true
               docker rm -f "$name" >/dev/null; exit 1
             fi
             sleep 1
           done
-          echo "❌ WebUI did not respond within 150s — logs:"
+          echo "❌ WebUI did not respond within 150s, logs:"
           docker logs "$name" || true
           docker rm -f "$name" >/dev/null
           exit 1
@@ -242,12 +240,10 @@ jobs:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
             name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' }}
-          # `latest` means "the newest released version", and nothing else. It
-          # used to mean "the tip of main", which is a different thing: a merge
-          # to main put an unreleased build in front of everyone pulling
-          # `latest` before a release existed, and the first bug report against
-          # it arrived before the release notes did. So a tag build sets it, and
-          # only when that tag is the newest release (see the step above).
+          # `latest` means "the newest released version", and nothing else, so
+          # an unreleased merge to main never reaches everyone pulling `latest`.
+          # A tag build sets it, and only when that tag is the newest release
+          # (see the step above).
           #
           # The tip of main gets `edge` instead. Still built, still smoke-tested
           # on both arches, still pullable, just nobody lands on it by accident.
@@ -299,10 +295,10 @@ jobs:
         env:
           PW: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
-          if [ -n "$PW" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "DOCKERHUB_TOKEN not set — skipping Docker Hub description sync"; echo "go=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$PW" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "DOCKERHUB_TOKEN not set, skipping Docker Hub description sync"; echo "go=false" >> "$GITHUB_OUTPUT"; fi
 
       # Cosmetic: syncs the GitHub README to the Docker Hub repo description.
-      # continue-on-error so a bad/expired DOCKERHUB_PASSWORD (401 at login — the
+      # continue-on-error so a bad/expired DOCKERHUB_PASSWORD (401 at login: the
       # description API needs the account password or an edit-scoped PAT, not the
       # push token) never reds a build whose images already pushed fine.
       - name: Sync README to Docker Hub
@@ -313,5 +309,5 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          short-description: "Stellarium for Unraid, in your browser via Selkies — the open-source planetarium, no VNC client."
+          short-description: "Stellarium for Unraid, in your browser via Selkies: the open-source planetarium, no VNC client."
           enable-url-completion: true

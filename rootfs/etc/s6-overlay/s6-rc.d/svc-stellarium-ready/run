@@ -1,21 +1,15 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-# -----------------------------------------------------------------------------
-# svc-stellarium-ready — print a loud "READY" banner to the container log once
-# the WebUI is actually serving, so the user knows the (multi-second) first
-# start has finished. House standard: every own-image container prints an
-# "<APP> IS READY" log banner alongside the ASCII init banner.
-# -----------------------------------------------------------------------------
+# Prints the "READY" banner to the container log once the WebUI serves, so the
+# user can tell the slow first start has finished.
 FLAG="/run/stellarium-ready.printed"
 
-# /run is tmpfs (wiped on every container start) -> banner prints once per start.
+# /run is a tmpfs, so the banner prints once per container start.
 if [[ -f "${FLAG}" ]]; then
     exec sleep infinity
 fi
 
-# Wait until the Selkies WebUI (nginx) accepts connections on its internal HTTP
-# port (3000 is always served regardless of the user's HTTPS preference).
-# Capped at ~5 min so we never hang forever.
+# Port 3000 is served whatever the user's HTTPS preference. Waits up to 5 minutes.
 ready=0
 for _ in $(seq 1 150); do
     if (exec 3<>/dev/tcp/127.0.0.1/3000) 2>/dev/null; then
@@ -26,24 +20,18 @@ for _ in $(seq 1 150); do
     sleep 2
 done
 
-# Small settle so Stellarium's window is actually drawn before we announce.
+# Gives Stellarium's window time to draw before the announcement.
 [[ "${ready}" -eq 1 ]] && sleep 4
 
-# House ASCII brand banner, printed here so it sits directly above the status
-# box (brand + "<APP> IS READY" as the log's final block).
+# Printed here so the brand banner sits directly above the status line.
 /usr/local/bin/print-banner.sh "Stellarium for Unraid" "Selkies web desktop" 2>/dev/null || true
 
-# Colored via plain ANSI SGR codes, not tput (tput needs a terminfo database
-# that may not exist in a minimal container): 32 green / 31 red, reset with 0.
-# docker logs passes stdout bytes through untouched, so any ANSI-aware viewer
-# (a real terminal, Unraid's log panel) renders the color; a viewer that does
-# not understand SGR codes just shows them as inert text.
+# Plain ANSI codes rather than tput, which needs a terminfo database a minimal
+# container may not have.
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-# Clean one-line status (house look: no rule/box walls, label + detail on the
-# same line). print-banner.sh already left one blank line above this.
 if [[ "${ready}" -eq 1 ]]; then
     echo -e "  ${GREEN}✓ STELLARIUM IS READY${NC} - Open the WebUI via HTTPS on port ${CUSTOM_HTTPS_PORT:-3001}"
 else
@@ -52,5 +40,5 @@ fi
 echo ""
 
 touch "${FLAG}"
-# Longrun: stay up so s6 does not restart us and re-print the banner.
+# A longrun that exits would be restarted by s6 and print the banner again.
 exec sleep infinity
