@@ -42,6 +42,14 @@ ENV TITLE="Stellarium" \
     SELKIES_ENABLE_BASIC_AUTH="false" \
     RESTART_APP="true"
 
+# At the DPI Selkies hands a HiDPI browser, Stellarium scales its panels but
+# draws the sky into a quarter of the window and leaves the rest black.
+# Streaming every browser at its CSS size with the DPI fixed at 96 keeps the
+# whole window drawn at one consistent size on any display. HiDPI can still be
+# switched on per browser in the Selkies sidebar.
+ENV SELKIES_USE_CSS_SCALING="true" \
+    SELKIES_SCALING_DPI="96"
+
 # The `stellarium` package pulls its own Qt dependency chain. On top of that:
 #   * mesa DRI drivers (libgl1-mesa-dri) so the sky renders via llvmpipe when no
 #     GPU is present (the base wires zink/virgl when one is); Stellarium is a
