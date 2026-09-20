@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/stellarium-banner-dark.png">
-    <img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/stellarium-banner.png" alt="Stellarium — clear skies, guaranteed" width="100%">
+    <img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/stellarium-banner.png" alt="Stellarium: clear skies, guaranteed" width="100%">
   </picture>
 </p>
 
@@ -17,10 +17,10 @@
 </p>
 
 <p align="center">
-<b>Stellarium, in your browser.</b> Explore the night sky from any device — no VNC client, no local install.<br>
+<b>Stellarium, in your browser.</b> Explore the night sky from any device. No VNC client, no local install.<br>
 This runs the full Stellarium desktop planetarium inside a single container and streams it to your
 browser over <a href="https://github.com/selkies-project/selkies">Selkies</a> (WebRTC), so panning
-the sky, zooming into a nebula and scrubbing through time stay smooth — the part of a real-time
+the sky, zooming into a nebula and scrubbing through time stay smooth, the part of a real-time
 planetarium where the old noVNC containers feel laggy.
 </p>
 
@@ -59,13 +59,13 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 ## 1. What is this?
 
-An **own-image container** that packages [**Stellarium**](https://github.com/Stellarium/stellarium) —
-the free, open-source desktop planetarium — on top of
+An **own-image container** that packages [**Stellarium**](https://github.com/Stellarium/stellarium)
+(the free, open-source desktop planetarium) on top of
 [**LinuxServer.io's baseimage-selkies**](https://github.com/linuxserver/docker-baseimage-selkies)
 and serves its desktop UI straight to your browser. No X client, no VNC viewer, no separate install
 on your workstation: open the WebUI and look up.
 
-There is **no maintained browser-desktop build of the actual Stellarium application** — the only
+There is **no maintained browser-desktop build of the actual Stellarium application**. The only
 "in a browser" option is *Stellarium Web*, a separate and much lighter JavaScript reimplementation,
 not the full desktop program with its plugins, catalogues and sky cultures. This is a maintained,
 modern **Selkies (WebRTC)** build of the real thing for **amd64 and arm64**.
@@ -81,14 +81,14 @@ A planetarium is a continuous-rendering workload: you drag across the sky, zoom 
 speed up time to watch the planets move, and swing the whole celestial sphere around. Over the older
 **noVNC** stack that constantly changing canvas feels laggy because the whole frame is re-encoded on
 every change. **Selkies streams the desktop over WebRTC**, the same reason LinuxServer moved Blender
-and FreeCAD onto it — so the sky stays fluid. When the host has a GPU the base wires it through; without
+and FreeCAD onto it, so the sky stays fluid. When the host has a GPU the base wires it through; without
 one it falls back to software rendering (Mesa llvmpipe) so it still works.
 
 <br>
 
 ## 3. Install on Unraid
 
-Requires **Unraid 6.12+**. Install via **Community Applications** — search for **Stellarium**
+Requires **Unraid 6.12+**. Install via **Community Applications**: search for **Stellarium**
 (look for the `junkerderprovinz` maintainer). Or add the template repository manually under
 **Docker → Add Container → Template repositories**:
 
@@ -147,22 +147,22 @@ size, so if Stellarium looks tiny on a laptop, switch HiDPI off there.
 
 > [!NOTE]
 > The WebUI has **no login by default** for trusted-LAN use. Never expose it directly to the
-> internet — put it behind a VPN or a reverse proxy that adds authentication, or set
+> internet. Put it behind a VPN or a reverse proxy that adds authentication, or set
 > `CUSTOM_USER` + `PASSWORD` to enable the built-in basic auth.
 
 <br>
 
 ## 5. First use
 
-1. Open the WebUI — Stellarium starts maximised, showing the sky for its default location.
+1. Open the WebUI. Stellarium starts maximised, showing the sky for its default location.
 2. Set your **location** (press `F6`, or the location button in the left toolbar) so the sky matches
    where you are; it is remembered for next time.
 3. Explore: drag to pan, scroll to zoom, use the bottom toolbar to toggle constellations, atmosphere,
    grids and labels, and the time controls (`J` / `K` / `L`) to slow, pause or speed up time.
-4. Want more? Stellarium's **Configuration** window (`F2`) enables plugins — the telescope control,
+4. Want more? Stellarium's **Configuration** window (`F2`) enables plugins: the telescope control,
    satellites, exoplanets, meteor showers and more.
 
-Closing the Stellarium window simply reopens a fresh instance — it is the container's single app
+Closing the Stellarium window simply reopens a fresh instance. It is the container's single app
 (kiosk model), so there is nothing else to manage.
 
 <br>
@@ -187,12 +187,12 @@ tested (the binary is present **and** the WebUI answers) before publishing, and 
 
 ## 7. Credits
 
-- **[Stellarium](https://github.com/Stellarium/stellarium)** by the Stellarium developers (GPL-2.0) —
+- **[Stellarium](https://github.com/Stellarium/stellarium)** by the Stellarium developers (GPL-2.0),
   the planetarium this image packages. Installed from the Debian `stellarium` package. This project is
   **not affiliated with or endorsed by the Stellarium project**.
 - **[LinuxServer.io baseimage-selkies](https://github.com/linuxserver/docker-baseimage-selkies)**
-  (GPL-3.0) — the Selkies web-desktop base.
-- **[Selkies](https://github.com/selkies-project/selkies)** — the WebRTC desktop streaming stack.
+  (GPL-3.0), the Selkies web-desktop base.
+- **[Selkies](https://github.com/selkies-project/selkies)**, the WebRTC desktop streaming stack.
 
 See [`NOTICE`](NOTICE) for the full bundled-software license list. This repository's own wrapper
 (Dockerfile, rootfs, scripts, artwork) is AGPL-3.0; see [`LICENSE`](LICENSE).
