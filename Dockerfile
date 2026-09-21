@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
 # Stellarium for Unraid on LinuxServer.io's baseimage-selkies, streamed to the
 # browser over WebRTC. Stellarium is a real-time OpenGL planetarium, a
 # continuously rendered sky you pan, zoom and time-scrub, which is the kind of
