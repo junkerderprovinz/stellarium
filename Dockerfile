@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
 # Stellarium for Unraid on LinuxServer.io's baseimage-selkies, streamed to the
-# browser over WebRTC. Stellarium is a real-time OpenGL planetarium, a
+# browser as H.264 video. Stellarium is a real-time OpenGL planetarium, a
 # continuously rendered sky you pan, zoom and time-scrub, which is the kind of
-# interactive workload that stutters over noVNC and stays smooth over WebRTC.
+# interactive workload that stutters over noVNC and stays smooth as video.
 #
 # The base is Debian trixie, which carries `stellarium` in main for amd64 and
 # arm64, so apt is the simplest source and brings trixie's security updates
 # along.
 
-ARG BASE_TAG=debiantrixie@sha256:a0b70771408d216d3f80f8cf06bc0380afb717a5c8fc68871792b8d49ffa4995
+ARG BASE_TAG=debiantrixie@sha256:5b448b9d62b6f471ba96104bdf2daedef3ed6852fdea6a780d341b4447a7a68d
 FROM ghcr.io/linuxserver/baseimage-selkies:${BASE_TAG}
 
 LABEL maintainer="junkerderprovinz"
@@ -19,9 +19,10 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0-only"
 LABEL org.opencontainers.image.vendor="junkerderprovinz"
 
 # TITLE feeds the PWA manifest; SELKIES_UI_TITLE is the visible tab/sidebar
-# title of the Selkies web client. SELKIES_ENABLE_BASIC_AUTH=false keeps the
-# no-login-by-default behaviour (see init-nologin); the base's nginx still
-# enforces HTTP basic auth once a real CUSTOM_USER/PASSWORD is set.
+# title of the Selkies web client. Selkies will not start with basic auth on and
+# no password, so SELKIES_ENABLE_BASIC_AUTH=false keeps the no-login default;
+# the base's nginx still enforces HTTP basic auth once a real
+# CUSTOM_USER/PASSWORD is set.
 #
 # RESTART_APP=true turns on the base image's svc-watchdog, which runs the
 # openbox autostart again whenever the application disappears; otherwise
@@ -29,14 +30,6 @@ LABEL org.opencontainers.image.vendor="junkerderprovinz"
 # restarts, since openbox keeps running on its own. The watchdog finds the
 # process by matching the autostart command line, which is why
 # rootfs/defaults/autostart does not `exec` the launch.
-#
-# MAX_RES has no default here. The virtual screen is the container's biggest
-# single memory item: the X server allocates the whole framebuffer up front,
-# about 4 bytes per pixel, so the base default of 15360x8640 is 530 MB before
-# anything else runs. The full range has to stay available, so the choice
-# belongs to the user: the Unraid template offers a preset dropdown (MAX_RES)
-# plus a free field (MAX_RES_CUSTOM) whose value wins, and init-screen-size
-# settles the two before svc-xorg reads them.
 ENV TITLE="Stellarium" \
     SELKIES_UI_TITLE="Stellarium" \
     SELKIES_ENABLE_BASIC_AUTH="false" \
@@ -52,7 +45,7 @@ ENV SELKIES_USE_CSS_SCALING="true" \
 
 # The `stellarium` package pulls its own Qt dependency chain. On top of that:
 #   * mesa DRI drivers (libgl1-mesa-dri) so the sky renders via llvmpipe when no
-#     GPU is present (the base wires zink/virgl when one is); Stellarium is a
+#     GPU is present (the base renders on the GPU when one is); Stellarium is a
 #     real-time OpenGL app, so this software-GL fallback is what makes it work
 #     on a GPU-less Unraid host,
 #   * libglu1-mesa (GLU) + mesa-utils (glxinfo, used to sanity-check GL),
@@ -76,8 +69,8 @@ RUN set -eux; \
 
 COPY rootfs/ /
 
-# rootfs/ ships svc-xorg/dependencies.d/init-screen-size so the screen-size
-# oneshot settles MAX_RES before Xvfb reads it. If a base bump renamed that
+# rootfs/ ships svc-xorg/dependencies.d/init-dpi so the DPI oneshot settles
+# the DPI before Xvfb starts. If a base bump renamed that
 # service, the COPY above would create /etc/s6-overlay/s6-rc.d/svc-xorg as a
 # service directory with a dependency and no `type` file. s6-rc-compile would
 # then abort in stage 2 and every container exit at boot while the build stayed
@@ -85,8 +78,8 @@ COPY rootfs/ /
 # base's own `type` file turns that into a build error instead.
 RUN set -eux; \
     t=/etc/s6-overlay/s6-rc.d/svc-xorg/type; \
-    [ -f "$t" ] || { echo "ERROR: $t missing, the selkies base renamed or dropped svc-xorg; re-point rootfs/etc/s6-overlay/s6-rc.d/svc-xorg/dependencies.d/init-screen-size at the new service"; exit 1; }; \
-    echo "stellarium: screen-size oneshot ordered before svc-xorg"
+    [ -f "$t" ] || { echo "ERROR: $t missing, the selkies base renamed or dropped svc-xorg; re-point rootfs/etc/s6-overlay/s6-rc.d/svc-xorg/dependencies.d/init-dpi at the new service"; exit 1; }; \
+    echo "stellarium: dpi oneshot ordered before svc-xorg"
 
 # Init-log banner: single source at .github/assets/banner-raw.txt (CR stripped
 # so a Windows checkout can't break it). Also blank the base's own adduser
@@ -100,11 +93,8 @@ RUN tr -d '\r' < /usr/local/share/banner-raw.txt > /usr/local/share/banner.txt; 
 COPY .github/assets/icon.png /usr/share/selkies/www/icon.png
 
 RUN chmod +x /usr/local/bin/print-banner.sh \
-             /usr/local/bin/selkies-resolution.sh \
-             /etc/s6-overlay/s6-rc.d/init-screen-size/run \
              /etc/s6-overlay/s6-rc.d/init-dpi/run \
              /etc/s6-overlay/s6-rc.d/init-stellarium/run \
-             /etc/s6-overlay/s6-rc.d/init-nologin/run \
              /etc/s6-overlay/s6-rc.d/svc-stellarium-ready/run \
              /defaults/autostart \
              /defaults/startwm.sh
