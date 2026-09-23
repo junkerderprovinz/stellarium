@@ -19,7 +19,7 @@
 <p align="center">
 <b>Stellarium, in your browser.</b> Explore the night sky from any device. No VNC client, no local install.<br>
 This runs the full Stellarium desktop planetarium inside a single container and streams it to your
-browser over <a href="https://github.com/selkies-project/selkies">Selkies</a> (WebRTC), so panning
+browser over <a href="https://github.com/selkies-project/selkies">Selkies</a> (H.264 video), so panning
 the sky, zooming into a nebula and scrubbing through time stay smooth, the part of a real-time
 planetarium where the old noVNC containers feel laggy.
 </p>
@@ -68,7 +68,7 @@ on your workstation: open the WebUI and look up.
 There is **no maintained browser-desktop build of the actual Stellarium application**. The only
 "in a browser" option is *Stellarium Web*, a separate and much lighter JavaScript reimplementation,
 not the full desktop program with its plugins, catalogues and sky cultures. This is a maintained,
-modern **Selkies (WebRTC)** build of the real thing for **amd64 and arm64**.
+modern **Selkies 2.0** build of the real thing for **amd64 and arm64**.
 
 Stellarium itself is installed from **Debian trixie's `stellarium` package**, so it tracks Debian's
 security updates and works natively on both architectures.
@@ -80,7 +80,7 @@ security updates and works natively on both architectures.
 A planetarium is a continuous-rendering workload: you drag across the sky, zoom into a star cluster,
 speed up time to watch the planets move, and swing the whole celestial sphere around. Over the older
 **noVNC** stack that constantly changing canvas feels laggy because the whole frame is re-encoded on
-every change. **Selkies streams the desktop over WebRTC**, the same reason LinuxServer moved Blender
+every change. **Selkies streams the desktop as H.264 video**, the same reason LinuxServer moved Blender
 and FreeCAD onto it, so the sky stays fluid. When the host has a GPU the base wires it through; without
 one it falls back to software rendering (Mesa llvmpipe) so it still works.
 
@@ -109,8 +109,6 @@ Then open the WebUI on the mapped **HTTPS** port (default `3001`).
 | `CUSTOM_HTTPS_PORT` | No | HTTPS port the WebUI is served on (default `3001`). |
 | `PUID` / `PGID` | No | User/group the app runs as, so files it writes match your share ownership. The Unraid template sets `99`/`100` (nobody/users). |
 | `TZ` | No | Timezone (e.g. `Europe/Berlin`). Also sets Stellarium's clock when it follows system time. |
-| `MAX_RES` | No | Virtual screen the container serves, picked from a dropdown of presets. This is where the container's memory goes, see below. |
-| `MAX_RES_CUSTOM` | No | Your own `WIDTHxHEIGHT` instead of a preset, e.g. `3440x1440`. Wins over `MAX_RES` when set. |
 
 Stellarium's configuration, chosen location, downloaded star catalogues, landscapes, plugins and
 screenshots all persist under **`/config`** (in `/config/.stellarium`), so nothing is lost across
@@ -118,21 +116,10 @@ image updates.
 
 ### Screen size and memory use
 
-The X server reserves its whole virtual framebuffer up front, at roughly **4 bytes per pixel**, no
-matter how big your browser window actually is. At the full `15360x8640` that is 530 MB before
-anything else runs, which is most of what this container uses.
-
-The image ships that full size, so every resolution stays available. If you would rather have the
-RAM back, pick a smaller screen in the template: the dropdown lists sizes from 1080p upwards with
-the cost of each, and the free field next to it takes anything not in the list. A value that is not
-a `WIDTHxHEIGHT` pair is ignored with a note in the container log rather than stopping the
-container.
-
-Pick a size at least as big as the largest browser window you open the WebUI in. A bigger window
-does not get a bigger desktop: the desktop keeps its last size in the top-left corner and the rest
-of the window stays black. This image streams at the size your browser reports, so a 1600x1000
-window on a laptop set to 200 % counts as 1600x1000. With HiDPI switched on in the Selkies sidebar
-the same window counts in physical pixels, 3200x2000.
+The desktop follows your browser window: Selkies resizes the screen to the size the browser
+reports, so there is no screen size to set and memory only grows with the window you actually use.
+A 1600x1000 window on a laptop set to 200 % counts as 1600x1000. With HiDPI switched on in the
+Selkies sidebar the same window counts in physical pixels, 3200x2000.
 
 **Display scaling** follows the browser without any setting. Every browser is streamed at the size
 it reports, with the desktop at 96 DPI, so Stellarium looks the same on a 100 % desktop and on a
@@ -170,7 +157,7 @@ Closing the Stellarium window simply reopens a fresh instance. It is the contain
 ## 6. How it works
 
 ```
-Browser ──WebRTC (Selkies)──> Stellarium container
+Browser ──WebSockets (Selkies)──> Stellarium container
                               ├─ nginx (Selkies WebUI, HTTPS :3001)
                               ├─ openbox + Selkies desktop
                               └─ /usr/bin/stellarium  (Debian trixie package)
@@ -192,7 +179,7 @@ tested (the binary is present **and** the WebUI answers) before publishing, and 
   **not affiliated with or endorsed by the Stellarium project**.
 - **[LinuxServer.io baseimage-selkies](https://github.com/linuxserver/docker-baseimage-selkies)**
   (GPL-3.0), the Selkies web-desktop base.
-- **[Selkies](https://github.com/selkies-project/selkies)**, the WebRTC desktop streaming stack.
+- **[Selkies](https://github.com/selkies-project/selkies)**, the desktop streaming stack.
 
 See [`NOTICE`](NOTICE) for the full bundled-software license list. This repository's own wrapper
 (Dockerfile, rootfs, scripts, artwork) is AGPL-3.0; see [`LICENSE`](LICENSE).
