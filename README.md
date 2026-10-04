@@ -24,6 +24,18 @@ the sky, zooming into a nebula and scrubbing through time stay smooth, the part 
 planetarium where the old noVNC containers feel laggy.
 </p>
 
+<!-- download-buttons: written by scripts/gen_download_buttons.py -->
+<p align="center">
+  <a href="https://ca.unraid.net/apps/stellarium-1we6aez0jcmlhj"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(0,0,841.9,245.3))" alt="Install from Unraid&#x27;s Community Applications" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://hub.docker.com/r/junkerderprovinz/stellarium/"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(866,0,841.9,245.3))" alt="Run it with Docker" width="160" height="46.618"></a>
+  &nbsp;
+  <a href="https://github.com/junkerderprovinz/stellarium/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(1732,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
+</p>
+<!-- /download-buttons -->
+
+<br>
+
 <p align="center">
 A one-knight job: I build it, keep it running, work through the issues and add what people ask for, until nothing is missing. It is free, with no accounts, no telemetry, no ads and no paid tier. No asterisk anywhere. Nothing readable ever leaves your own walls. Forged on evenings and weekends, with heart and stubbornness.
 </p>
@@ -32,171 +44,72 @@ A one-knight job: I build it, keep it running, work through the issues and add w
 If it has earned a place on your server or computer, toss a coin to your knight: it helps cover the costs and keeps the project alive. It also makes this knight's heart beat a little faster. Three ways below, whichever suits you.
 </p>
 
+<!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(0,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.62"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(2598,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(841.9,0,841.9,245.3))" alt="PayPal" width="160" height="46.62"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(3464,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(1683.8,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.62"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(4330,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
+<!-- /give-buttons -->
 
 <br>
 
 ## Table of Contents
 
-1. [What is this?](#1-what-is-this)
-2. [Why Selkies?](#2-why-selkies)
-3. [Install on Unraid](#3-install-on-unraid)
-4. [Configuration](#4-configuration)
-5. [First use](#5-first-use)
-6. [How it works](#6-how-it-works)
-7. [Credits](#7-credits)
-8. [License](#8-license)
-9. [How AI is used here](#9-how-ai-is-used-here)
-10. [Support this project](#10-support-this-project)
+1. [What it looks like](#1-what-it-looks-like)
+2. [What it does](#2-what-it-does)
+3. [Getting started](#3-getting-started)
+4. [How AI is used here](#4-how-ai-is-used-here)
+5. [Support this project](#5-support-this-project)
 
 <br>
 
-## 1. What is this?
+## 1. What it looks like
 
-An **own-image container** that packages [**Stellarium**](https://github.com/Stellarium/stellarium)
-(the free, open-source desktop planetarium) on top of
-[**LinuxServer.io's baseimage-selkies**](https://github.com/linuxserver/docker-baseimage-selkies)
-and serves its desktop UI straight to your browser. No X client, no VNC viewer, no separate install
-on your workstation: open the WebUI and look up.
+The pictures come from a test instance set to Alice Springs on a July night.
 
-There is **no maintained browser-desktop build of the actual Stellarium application**. The only
-"in a browser" option is *Stellarium Web*, a separate and much lighter JavaScript reimplementation,
-not the full desktop program with its plugins, catalogues and sky cultures. This is a maintained,
-modern **Selkies 2.0** build of the real thing for **amd64 and arm64**.
+<p align="center">
+  <img src=".github/assets/screenshots/stellarium-1.png" alt="Stellarium in a browser window: the Milky Way from Crux to Cygnus, with constellation lines and names" width="100%">
+  <br><em>The full desktop Stellarium in a browser tab, streamed from the container</em>
+</p>
 
-Stellarium itself is installed from **Debian trixie's `stellarium` package**, so it tracks Debian's
-security updates and works natively on both architectures.
+<p align="center">
+  <img src=".github/assets/screenshots/stellarium-2.png" alt="Stellarium zoomed into Scorpius with the constellation art on, showing the data panel for Antares" width="100%">
+  <br><em>Click any object for its data, here Antares with the constellation art switched on</em>
+</p>
 
 <br>
 
-## 2. Why Selkies?
+## 2. What it does
 
-A planetarium is a continuous-rendering workload: you drag across the sky, zoom into a star cluster,
-speed up time to watch the planets move, and swing the whole celestial sphere around. Over the older
-**noVNC** stack that constantly changing canvas feels laggy because the whole frame is re-encoded on
-every change. **Selkies streams the desktop as H.264 video**, the same reason LinuxServer moved Blender
-and FreeCAD onto it, so the sky stays fluid. When the host has a GPU the base wires it through; without
-one it falls back to software rendering (Mesa llvmpipe) so it still works.
+- **The real program.** The only other way to have Stellarium in a browser is Stellarium Web, a separate and much lighter rewrite. This is the full desktop app with its plugins, catalogues and sky cultures, installed from Debian trixie's `stellarium` package for amd64 and arm64.
+- **A smooth sky.** Selkies streams the desktop as H.264 video, so dragging across the sky and speeding up time stay fluid where a noVNC desktop stutters.
+- **GPU optional.** A GPU passed into the container is used; without one, Stellarium renders in software and still works.
+- **Sized to your window.** The desktop follows your browser window, so there is no screen size to set and memory grows only with the window you use.
+- **Nothing lost on updates.** Your location, downloaded catalogues, landscapes, plugins and screenshots live under `/config`.
 
 <br>
 
-## 3. Install on Unraid
+## 3. Getting started
 
-Requires **Unraid 6.12+**. Install via **Community Applications**: search for **Stellarium**
-(look for the `junkerderprovinz` maintainer). Or add the template repository manually under
-**Docker → Add Container → Template repositories**:
+On Unraid, install **Stellarium** from [Community Applications](https://ca.unraid.net/apps/stellarium-1we6aez0jcmlhj). Anywhere else, one container is enough:
 
-```
-https://github.com/junkerderprovinz/unraid-apps
+```sh
+docker run -d --name stellarium -p 3001:3001 --shm-size=1gb \
+  -v /path/to/config:/config \
+  junkerderprovinz/stellarium:latest
 ```
 
-Then open the WebUI on the mapped **HTTPS** port (default `3001`).
-
-<br>
-
-## 4. Configuration
-
-| Variable | Required | Description |
-|---|---|---|
-| `CUSTOM_USER` | No | WebUI login user. Leave empty (with `PASSWORD`) for **no login** on a trusted LAN. |
-| `PASSWORD` | No | WebUI login password. Empty = no login; set both to enable HTTP basic auth on the WebUI. |
-| `CUSTOM_HTTPS_PORT` | No | HTTPS port the WebUI is served on (default `3001`). |
-| `PUID` / `PGID` | No | User/group the app runs as, so files it writes match your share ownership. The Unraid template sets `99`/`100` (nobody/users). |
-| `TZ` | No | Timezone (e.g. `Europe/Berlin`). Also sets Stellarium's clock when it follows system time. |
-
-Stellarium's configuration, chosen location, downloaded star catalogues, landscapes, plugins and
-screenshots all persist under **`/config`** (in `/config/.stellarium`), so nothing is lost across
-image updates.
-
-### Screen size and memory use
-
-The desktop follows your browser window: Selkies resizes the screen to the size the browser
-reports, so there is no screen size to set and memory only grows with the window you actually use.
-A 1600x1000 window on a laptop set to 200 % counts as 1600x1000. With HiDPI switched on in the
-Selkies sidebar the same window counts in physical pixels, 3200x2000.
-
-**Display scaling** follows the browser without any setting. Every browser is streamed at the size
-it reports, with the desktop at 96 DPI, so Stellarium looks the same on a 100 % desktop and on a
-laptop set to 200 %. On the laptop the picture is a little softer, because the browser stretches it.
-The **HiDPI** switch in the Selkies sidebar is remembered per browser and wins over this default.
-With it on, a high-resolution display gets its physical pixels and Stellarium is drawn at half
-size, so if Stellarium looks tiny on a laptop, switch HiDPI off there.
+Then open `https://<server>:3001` and accept the self-signed certificate once. Stellarium starts maximised; press `F6` to set your location, and `F2` opens the configuration window with the plugins.
 
 > [!NOTE]
-> Closing Stellarium in the browser starts a fresh one instead of leaving a black screen. That is
-> the base image's watchdog, enabled here by default.
-
-> [!NOTE]
-> The WebUI has **no login by default** for trusted-LAN use. Never expose it directly to the
-> internet. Put it behind a VPN or a reverse proxy that adds authentication, or set
-> `CUSTOM_USER` + `PASSWORD` to enable the built-in basic auth.
+> The WebUI has no login by default, for use on a trusted LAN. Set `CUSTOM_USER` and `PASSWORD` to turn on the built-in login, and never expose the WebUI to the internet without a VPN or an authenticating reverse proxy in front.
 
 <br>
 
-## 5. First use
-
-1. Open the WebUI. Stellarium starts maximised, showing the sky for its default location.
-2. Set your **location** (press `F6`, or the location button in the left toolbar) so the sky matches
-   where you are; it is remembered for next time.
-3. Explore: drag to pan, scroll to zoom, use the bottom toolbar to toggle constellations, atmosphere,
-   grids and labels, and the time controls (`J` / `K` / `L`) to slow, pause or speed up time.
-4. Want more? Stellarium's **Configuration** window (`F2`) enables plugins: the telescope control,
-   satellites, exoplanets, meteor showers and more.
-
-Closing the Stellarium window simply reopens a fresh instance. It is the container's single app
-(kiosk model), so there is nothing else to manage.
-
-<br>
-
-## 6. How it works
-
-```
-Browser ──WebSockets (Selkies)──> Stellarium container
-                              ├─ nginx (Selkies WebUI, HTTPS :3001)
-                              ├─ openbox + Selkies desktop
-                              └─ /usr/bin/stellarium  (Debian trixie package)
-                                 └─ /config/.stellarium  (location, catalogues, plugins, persisted)
-```
-
-Built on `ghcr.io/linuxserver/baseimage-selkies:debiantrixie`. A small s6 overlay seeds the
-openbox autostart (which launches Stellarium as the session's single app), keeps the WebUI
-login-free unless you set credentials, and prints a **`STELLARIUM IS READY`** banner to the
-container log once the WebUI is serving. Images are built natively per architecture, boot-smoke
-tested (the binary is present **and** the WebUI answers) before publishing, and scanned for CVEs.
-
-<br>
-
-## 7. Credits
-
-- **[Stellarium](https://github.com/Stellarium/stellarium)** by the Stellarium developers (GPL-2.0),
-  the planetarium this image packages. Installed from the Debian `stellarium` package. This project is
-  **not affiliated with or endorsed by the Stellarium project**.
-- **[LinuxServer.io baseimage-selkies](https://github.com/linuxserver/docker-baseimage-selkies)**
-  (GPL-3.0), the Selkies web-desktop base.
-- **[Selkies](https://github.com/selkies-project/selkies)**, the desktop streaming stack.
-
-See [`NOTICE`](NOTICE) for the full bundled-software license list. This repository's own wrapper
-(Dockerfile, rootfs, scripts, artwork) is AGPL-3.0; see [`LICENSE`](LICENSE).
-
-<br>
-
-## 8. License
-
-**Copyright (C) 2026 Junker der Provinz.**
-
-This repository packages Stellarium as a container for Unraid. The packaging in this repository (Dockerfile, scripts, theme, web assets and everything else original here) is free software under the **GNU Affero General Public License v3.0** (AGPL-3.0); see [LICENSE](LICENSE). If you distribute it, or run a modified version as a network service, you must release your source under the same AGPL-3.0 terms and keep the existing copyright and attribution notices intact.
-
-**Scope.** The AGPL applies to this repository's own code and assets. Stellarium itself is a separate project under its own license and name; this repository does not claim it. The banner, logo, theme and other branding original to this repository remain reserved: a fork must use its own branding and may not present itself as this project.
-
-<br>
-
-## 9. How AI is used here
+## 4. How AI is used here
 
 One knight builds this, and AI is one of the tools I work with, the same way I work with an editor or a compiler. It helps me write code and documentation and it checks my work, and that saves me a good many evenings. It does not make the decisions, though. I read and understand everything before it ships, and if something here breaks, that is on me and not on the tool.
 
@@ -204,7 +117,7 @@ You do not have to take my word for it. The code is open and every release note 
 
 <br>
 
-## 10. Support this project
+## 5. Support this project
 
 Questions, bugs, ideas or feature requests? Please [open a GitHub issue](https://github.com/junkerderprovinz/stellarium/issues).
 
@@ -212,10 +125,16 @@ A one-knight job: I build it, keep it running, work through the issues and add w
 
 If it has earned a place on your server or computer, toss a coin to your knight: it helps cover the costs and keeps the project alive. It also makes this knight's heart beat a little faster. Three ways below, whichever suits you.
 
+<!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(0,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.62"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(2598,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(841.9,0,841.9,245.3))" alt="PayPal" width="160" height="46.62"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(3464,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/junkerderprovinz/main/donate/buttons/give.svg#svgView(viewBox(1683.8,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.62"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/.github/assets/download-buttons/buttons.svg?v=a82cc8264e34#svgView(viewBox(4330,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
+<!-- /give-buttons -->
+
+<br>
+
+<sub>[Stellarium](https://github.com/Stellarium/stellarium) is GPL-2.0 software by the Stellarium developers, and this project is not affiliated with or endorsed by it. The packaging here is AGPL-3.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE) for the bundled software.</sub>
