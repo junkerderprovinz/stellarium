@@ -107,6 +107,14 @@ Then open `https://<server>:3001` and accept the self-signed certificate once. S
 > [!NOTE]
 > The WebUI has no login by default, for use on a trusted LAN. Set `CUSTOM_USER` and `PASSWORD` to turn on the built-in login, and never expose the WebUI to the internet without a VPN or an authenticating reverse proxy in front.
 
+### Other Docker hosts
+
+[compose.yaml](compose.yaml) runs Stellarium on any Linux server with Docker. Put it in a folder of its own and start it with `docker compose up -d`. The folders are created next to the file.
+
+- **Synology:** in Container Manager, create a project from the file (DSM 7.2 or newer).
+- **Proxmox:** run it in a VM or an LXC container that has Docker.
+- **MOS:** install Stellarium from the [MOS Hub](https://mos-official.net/apps.html?search=Stellarium).
+
 <br>
 
 ## 4. How AI is used here
