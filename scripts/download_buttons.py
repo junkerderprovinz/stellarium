@@ -10,6 +10,8 @@ REPO = "stellarium"
 BUTTONS = {
     "unraid": "https://ca.unraid.net/apps/stellarium-1we6aez0jcmlhj",
     "mos": "https://mos-official.net/apps.html?search=Stellarium",
+    "zimaos": "https://github.com/junkerderprovinz/zimaos-apps#install",
+    "umbrel": "https://github.com/junkerderprovinz/umbrel-apps#install",
     "compose": "https://raw.githubusercontent.com/junkerderprovinz/stellarium/main/compose.yaml",
     # A release's "Source code (zip)" is the whole repository at that tag, and
     # GitHub gives the newest one no fixed address, so this leads to the release
