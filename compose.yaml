@@ -7,7 +7,7 @@
 
 services:
   stellarium:
-    image: junkerderprovinz/stellarium:latest@sha256:0ba5a827efd3bb02d9836988fe5d1b5413dcc91ea31760ec0c2e3842b7598e7f
+    image: junkerderprovinz/stellarium:latest
     container_name: stellarium
     restart: unless-stopped
     shm_size: 1gb
