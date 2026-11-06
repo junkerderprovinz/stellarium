@@ -8,7 +8,7 @@
 # arm64, so apt is the simplest source and brings trixie's security updates
 # along.
 
-ARG BASE_TAG=debiantrixie@sha256:7fa5ffec83a1dbe5397d5751b9e072f8abe5c74b5e2f1f6d2442ab08fcd76970
+ARG BASE_TAG=debiantrixie@sha256:ad553118607145044871350c7d8b1d522a7dfec3896e3089749f53f95d871737
 FROM ghcr.io/linuxserver/baseimage-selkies:${BASE_TAG}
 
 LABEL maintainer="junkerderprovinz"
