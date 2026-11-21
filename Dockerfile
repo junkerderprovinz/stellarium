@@ -9,7 +9,7 @@
 # along.
 
 # renovate: datasource=docker depName=ghcr.io/linuxserver/baseimage-selkies
-ARG BASE_TAG=debiantrixie@sha256:8ec2ec5f81bc444643838fe3eea79f0e2ba09f6afff4b6f5b39f3e7cc05efcd1
+ARG BASE_TAG=debiantrixie@sha256:793fc3628ad6e089aecfd9f862de3ad5d9df05f1db783363c812f77d6541ccc3
 FROM ghcr.io/linuxserver/baseimage-selkies:${BASE_TAG}
 
 LABEL maintainer="junkerderprovinz"
