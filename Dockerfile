@@ -56,6 +56,8 @@ ENV SELKIES_USE_CSS_SCALING="true" \
 #     plus locales.
 RUN set -eux; \
     apt-get update; \
+    # The upgrade takes the security fixes published since the base image was built.
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         stellarium \
         libgl1-mesa-dri libglu1-mesa mesa-utils \
