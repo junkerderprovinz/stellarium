@@ -8,12 +8,13 @@
  * night-sky icon that reads on both a light and a dark ground, so it is embedded
  * unchanged in both themes) is left-anchored at x=165, 400px tall; the
  * "Stellarium" wordmark sits to its right in Open Sans (OFL), foreground colour;
- * the cheeky claim in Lato (OFL) grey, left-aligned with the wordmark and pulled
+ * the cheeky claim in Bree Light grey, left-aligned with the wordmark and pulled
  * close. Name + claim are rendered to vector paths (opentype.js) so the SVG needs
  * no font; the raster tile is inlined as a data URI so the SVG is self-contained.
  *
- * Deps: `npm i -g @resvg/resvg-js opentype.js`. Fonts (OFL) are fetched at
- * runtime to the OS temp dir and never committed. Run:
+ * Deps: `npm i -g @resvg/resvg-js opentype.js`. Open Sans is fetched at runtime
+ * to the OS temp dir, Bree Light is read as TTF from HOUSE_FONTS (default
+ * %LOCALAPPDATA%\halleluja-fonts). Neither is committed. Run:
  *   node .github/assets/gen-banner.mjs
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -42,7 +43,7 @@ const THEMES = [
   { suffix: "-dark", bg: "#0d1117", name: "#e6edf3", claim: "#9aa4ad" },
 ];
 
-// Fonts (OFL): Open Sans for the wordmark, Lato for the claim, fetched and never committed.
+// Open Sans for the wordmark, fetched and never committed.
 // Verify Content-Length so a truncated download can't silently break glyph outlines
 // (a short file still parses, but the tail glyphs render broken).
 async function font(url, file) {
@@ -65,7 +66,9 @@ async function font(url, file) {
   return opentype.parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength));
 }
 const openSans = await font("https://github.com/google/fonts/raw/main/ofl/opensans/OpenSans%5Bwdth,wght%5D.ttf", "stellarium-OpenSans.ttf");
-const lato = await font("https://github.com/google/fonts/raw/main/ofl/lato/Lato-Regular.ttf", "stellarium-Lato-Regular.ttf");
+// The house typeface is licensed, so it is read from a local folder and never committed.
+const fonts = process.env.HOUSE_FONTS ?? join(process.env.LOCALAPPDATA ?? tmpdir(), "halleluja-fonts");
+const claimFont = opentype.parse(readFileSync(join(fonts, "bree-light.ttf")).buffer);
 
 // The tile (icon.png) inlined as a data URI so the SVG is self-contained.
 const tileHref = "data:image/png;base64," + readFileSync(join(__dir, "icon.png")).toString("base64");
@@ -78,8 +81,8 @@ if (openSans.getAdvanceWidth(NAME, nameSize) > maxNameW)
 const em = (f, s) => s / f.unitsPerEm;
 const nameAsc = openSans.ascender * em(openSans, nameSize);
 const nameDesc = -openSans.descender * em(openSans, nameSize);
-const claimAsc = lato.ascender * em(lato, claimSize);
-const claimDesc = -lato.descender * em(lato, claimSize);
+const claimAsc = claimFont.ascender * em(claimFont, claimSize);
+const claimDesc = -claimFont.descender * em(claimFont, claimSize);
 const blockH = nameAsc + nameDesc + lineGap + claimAsc + claimDesc;
 const top = (H - blockH) / 2;
 const nameBaseline = top + nameAsc;
@@ -91,7 +94,7 @@ const claimBaseline = nameBaseline + nameDesc + lineGap + claimAsc;
 const glyphD = (font, text, x, baseline, size) =>
   font.getPaths(text, x, baseline, size).map((p) => p.toPathData(2)).filter(Boolean);
 const nameD = glyphD(openSans, NAME, textX, nameBaseline, nameSize);
-const claimD = glyphD(lato, CLAIM, textX, claimBaseline, claimSize);
+const claimD = glyphD(claimFont, CLAIM, textX, claimBaseline, claimSize);
 const paths = (ds, fill) => ds.map((d) => `<path d="${d}" fill="${fill}"/>`).join("");
 
 const LY = (H - LH) / 2;
